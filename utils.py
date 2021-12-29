@@ -1,3 +1,4 @@
+import re
 import os
 import pdb
 import math
@@ -15,7 +16,7 @@ from ctypes import *
 
 from numpy import linalg as LA
 
-import math_utils
+import topology
 import shapes
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -40,54 +41,36 @@ def read_ply(filename):
         header = ply_file.read().split("end_header")
         header, data = header[0], header[1][1:].split("\n")
 
-        n_verts = [x for x in header.split("\n") if "element vertex" in x][0]
-        n_faces = [x for x in header.split("\n") if "element face" in x][0]
+        # Get number of verts and faces from PLY header
+        n_verts = int(re.findall("element vertex (.*)\n", header)[0])
+        n_faces = int(re.findall("element face (.*)\n", header)[0])
 
-        n_verts = int(n_verts.split()[-1])
-        n_faces = int(n_faces.split()[-1])
-
+        # Get
         vertices = []
         for i in range(n_verts):
             v_info = data.pop(0).split()
-
-            rgb = {"r": 1.0, "g": 1.0, "b": 1.0}
 
             v = shapes.vertex(
                     i,
                     float(v_info[0]),    # x
                     float(v_info[1]),    # y
                     float(v_info[2]),    # z
-                    rgb=rgb,             # rgb
+                    rgb=(1, 1, 1),             # rgb
                 )
             vertices.append(v)
 
-        # for v in vertices[-30:]:
-            # v.rgb = {"r": 1.0, "g": 1.0, "b": 1.0}
+        for v in vertices[-30:]:
+            v.rgb = (0, 1, 0)
 
         faces = []
         for i in range(n_faces):
             f_info = data.pop(0).split()
 
             # Adds face to poly
-            if (int(f_info[0]) == 3):  # if the poly is a triangle
-                f = shapes.face(
-                        int(f_info[0]),
-                        [
-                            vertices[int(f_info[1])],  # v1
-                            vertices[int(f_info[2])],  # v2
-                            vertices[int(f_info[3])],  # v3
-                        ]
-                    )
-            elif (int(f_info[0]) == 4):  # if the poly is a quad
-                f = shapes.face(
-                        int(f_info[0]),
-                        [
-                            vertices[int(f_info[1])],  # v1
-                            vertices[int(f_info[2])],  # v2
-                            vertices[int(f_info[3])],  # v3
-                            vertices[int(f_info[4])],  # v4
-                        ]
-                    )
+            num_fv = int(f_info[0])  # number of face vertices
+            face_verts = [vertices[int(f_info[i])] for i in range(num_fv)]
+
+            f = shapes.face(num_fv, face_verts)
             faces.append(f)
 
         return(shapes.poly(vertices, faces))
@@ -162,3 +145,6 @@ def render_shape(z_res, xy_res, shape_func, multiplier=1):
 
 
     return(shapes.poly(vertices, faces, triangle_pairs=triangle_pairs))
+
+if __name__=="__main__":
+    read_ply("ply_files/sphere.ply")

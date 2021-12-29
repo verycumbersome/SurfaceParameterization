@@ -18,7 +18,7 @@ from OpenGL.arrays import vbo
 from OpenGL.raw.GL.ARB.vertex_array_object import glGenVertexArrays, \
                                                           glBindVertexArray
 
-import math_utils
+import topology
 import utils
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -123,8 +123,8 @@ class vertex:
     y: float
     z: float
 
-    # Size 3 dict of rgb: rgb["r"] = red_val, etc..
-    rgb: dict = field(repr=False, default_factory=dict)
+    # Size 3 tuple of rgb: rgb[0] = red_val, etc..
+    rgb: tuple
 
     # Stores xyz in np array
     coords: np.ndarray = np.zeros(shape=3)
@@ -244,7 +244,7 @@ class poly:
         self.get_edges()
         self.get_boundary()
 
-        pp.pprint(self.edge_graph)
+        # pp.pprint(self.edge_graph)
 
         if(self.triangle_pairs):
             self.calc_dirichlet()
@@ -280,8 +280,8 @@ class poly:
             # fvi = np.array(self.triangle_pairs[-1]["2D"])[0]
             # fvj = np.array(self.triangle_pairs[-2]["2D"])[1]
 
-            # aij = math_utils.calc_theta(vj - vj1, vi - vj1)
-            # bij = math_utils.calc_theta(vi - vi1, vj - vi1)
+            # aij = topology.calc_theta(vj - vj1, vi - vj1)
+            # bij = topology.calc_theta(vi - vi1, vj - vi1)
 
             # wij = mpmath.cot(aij) + mpmath.cot(bij)
 
